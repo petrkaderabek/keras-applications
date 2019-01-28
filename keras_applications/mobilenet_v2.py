@@ -199,6 +199,7 @@ def MobileNetV2(input_shape=None,
         raise ValueError('If using `weights` as `"imagenet"` with `include_top` '
                          'as true, `classes` should be 1000')
 
+    """
     # Determine proper input shape and default size.
     # If both input_shape and input_tensor are used, they should match
     if input_shape is not None and input_tensor is not None:
@@ -250,7 +251,9 @@ def MobileNetV2(input_shape=None,
                 default_size = rows
             else:
                 default_size = 224
-
+    """
+    if False:   # dummy code ...
+        pass    # ... added here instead of the commented
     # If input_shape is None and no input_tensor
     elif input_shape is None:
         default_size = 224
