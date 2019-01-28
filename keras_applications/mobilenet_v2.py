@@ -320,6 +320,7 @@ def MobileNetV2(input_shape=None,
     else:
         old_data_format = None
 
+    """
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
     else:
@@ -327,6 +328,9 @@ def MobileNetV2(input_shape=None,
             img_input = layers.Input(tensor=input_tensor, shape=input_shape)
         else:
             img_input = input_tensor
+    """
+    assert input_tensor is not None  # added instead ...
+    img_input = input_tensor         # ... of the commented code above
 
     first_block_filters = _make_divisible(32 * alpha, 8)
     x = layers.ZeroPadding2D(padding=correct_pad(backend, img_input, 3),
