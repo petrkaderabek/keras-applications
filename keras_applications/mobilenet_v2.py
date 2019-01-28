@@ -335,7 +335,7 @@ def MobileNetV2(input_shape=None,
                       use_bias=False,
                       name='Conv1')(x)
     x = layers.BatchNormalization(
-        epsilon=1e-3, momentum=0.999, name='bn_Conv1')(x)
+        epsilon=1e-3, momentum=0.999, name='bn_Conv1')(x, training=False)
     x = layers.ReLU(6., name='Conv1_relu')(x)
 
     x = _inverted_res_block(x, filters=16, alpha=alpha, stride=1,
@@ -393,7 +393,7 @@ def MobileNetV2(input_shape=None,
                       name='Conv_1')(x)
     x = layers.BatchNormalization(epsilon=1e-3,
                                   momentum=0.999,
-                                  name='Conv_1_bn')(x)
+                                  name='Conv_1_bn')(x, training=False)
     x = layers.ReLU(6., name='out_relu')(x)
 
     if include_top:
@@ -461,7 +461,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id):
                           name=prefix + 'expand')(x)
         x = layers.BatchNormalization(epsilon=1e-3,
                                       momentum=0.999,
-                                      name=prefix + 'expand_BN')(x)
+                                      name=prefix + 'expand_BN')(x, training=False)
         x = layers.ReLU(6., name=prefix + 'expand_relu')(x)
     else:
         prefix = 'expanded_conv_'
@@ -478,7 +478,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id):
                                name=prefix + 'depthwise')(x)
     x = layers.BatchNormalization(epsilon=1e-3,
                                   momentum=0.999,
-                                  name=prefix + 'depthwise_BN')(x)
+                                  name=prefix + 'depthwise_BN')(x, training=False)
 
     x = layers.ReLU(6., name=prefix + 'depthwise_relu')(x)
 
@@ -490,7 +490,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id):
                       activation=None,
                       name=prefix + 'project')(x)
     x = layers.BatchNormalization(
-        epsilon=1e-3, momentum=0.999, name=prefix + 'project_BN')(x)
+        epsilon=1e-3, momentum=0.999, name=prefix + 'project_BN')(x, training=False)
 
     if in_channels == pointwise_filters and stride == 1:
         return layers.Add(name=prefix + 'add')([inputs, x])
