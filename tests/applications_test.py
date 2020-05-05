@@ -29,22 +29,23 @@ from multiprocessing import Process, Queue
 def keras_modules_injection(base_fun):
 
     def wrapper(*args, **kwargs):
-        if hasattr(keras_applications, 'get_submodules_from_kwargs'):
-            kwargs['backend'] = backend
-            kwargs['layers'] = layers
-            kwargs['models'] = models
-            kwargs['utils'] = utils
+        kwargs['backend'] = backend
+        kwargs['layers'] = layers
+        kwargs['models'] = models
+        kwargs['utils'] = utils
         return base_fun(*args, **kwargs)
     return wrapper
 
 
 for (name, module) in [('resnet', keras_applications.resnet),
                        ('resnet_v2', keras_applications.resnet_v2),
-                       ('resnext', keras_applications.resnext)]:
+                       ('resnext', keras_applications.resnext),
+                       ('efficientnet', keras_applications.efficientnet),
+                       ('mobilenet_v3', keras_applications.mobilenet_v3)]:
     module.decode_predictions = keras_modules_injection(module.decode_predictions)
     module.preprocess_input = keras_modules_injection(module.preprocess_input)
     for app in dir(module):
-        if app[0].isupper():
+        if app[0].isupper() and callable(getattr(module, app)):
             setattr(module, app, keras_modules_injection(getattr(module, app)))
     setattr(keras_applications, name, module)
 
@@ -58,12 +59,22 @@ RESNETV2_LIST = [keras_applications.resnet_v2.ResNet50V2,
 RESNEXT_LIST = [keras_applications.resnext.ResNeXt50,
                 keras_applications.resnext.ResNeXt101]
 MOBILENET_LIST = [(mobilenet.MobileNet, mobilenet, 1024),
-                  (mobilenet_v2.MobileNetV2, mobilenet_v2, 1280)]
+                  (mobilenet_v2.MobileNetV2, mobilenet_v2, 1280),
+                  (keras_applications.mobilenet_v3.MobileNetV3Small,
+                   keras_applications.mobilenet_v3, 576),
+                  (keras_applications.mobilenet_v3.MobileNetV3Large,
+                   keras_applications.mobilenet_v3, 960)]
 DENSENET_LIST = [(densenet.DenseNet121, 1024),
                  (densenet.DenseNet169, 1664),
                  (densenet.DenseNet201, 1920)]
 NASNET_LIST = [(nasnet.NASNetMobile, 1056),
                (nasnet.NASNetLarge, 4032)]
+EFFICIENTNET_LIST = [(keras_applications.efficientnet.EfficientNetB0, 1280),
+                     (keras_applications.efficientnet.EfficientNetB1, 1280),
+                     (keras_applications.efficientnet.EfficientNetB2, 1408),
+                     (keras_applications.efficientnet.EfficientNetB3, 1536),
+                     (keras_applications.efficientnet.EfficientNetB4, 1792),
+                     (keras_applications.efficientnet.EfficientNetB5, 2048)]
 
 
 def keras_test(func):
@@ -205,7 +216,11 @@ def test_resnetv2():
 def test_resnext():
     app = random.choice(RESNEXT_LIST)
     module = keras_applications.resnext
+    last_dim = 2048
     _test_application_basic(app, module=module)
+    _test_application_notop(app, last_dim)
+    _test_application_variable_input_channels(app, last_dim)
+    _test_app_pooling(app, last_dim)
 
 
 def test_vgg():
@@ -271,6 +286,15 @@ def test_nasnet():
     _test_application_basic(app, module=module)
     # _test_application_notop(app, last_dim)
     # _test_application_variable_input_channels(app, last_dim)
+    _test_app_pooling(app, last_dim)
+
+
+def test_efficientnet():
+    app, last_dim = random.choice(EFFICIENTNET_LIST)
+    module = keras_applications.efficientnet
+    _test_application_basic(app, module=module)
+    _test_application_notop(app, last_dim)
+    _test_application_variable_input_channels(app, last_dim)
     _test_app_pooling(app, last_dim)
 
 
