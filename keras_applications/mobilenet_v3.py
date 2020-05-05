@@ -154,7 +154,7 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride,
         x = layers.BatchNormalization(axis=channel_axis,
                                       epsilon=1e-3,
                                       momentum=0.999,
-                                      name=prefix + 'expand/BatchNorm')(x)
+                                      name=prefix + 'expand/BatchNorm')(x, training=False)
         x = layers.Activation(activation)(x)
 
     if stride == 2:
@@ -168,7 +168,7 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride,
     x = layers.BatchNormalization(axis=channel_axis,
                                   epsilon=1e-3,
                                   momentum=0.999,
-                                  name=prefix + 'depthwise/BatchNorm')(x)
+                                  name=prefix + 'depthwise/BatchNorm')(x, training=False)
     x = layers.Activation(activation)(x)
 
     if se_ratio:
@@ -182,7 +182,7 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride,
     x = layers.BatchNormalization(axis=channel_axis,
                                   epsilon=1e-3,
                                   momentum=0.999,
-                                  name=prefix + 'project/BatchNorm')(x)
+                                  name=prefix + 'project/BatchNorm')(x, training=False)
 
     if stride == 1 and infilters == filters:
         x = layers.Add(name=prefix + 'Add')([shortcut, x])
@@ -380,7 +380,7 @@ def MobileNetV3(stack_fn,
     x = layers.BatchNormalization(axis=channel_axis,
                                   epsilon=1e-3,
                                   momentum=0.999,
-                                  name='Conv/BatchNorm')(x)
+                                  name='Conv/BatchNorm')(x, training=False)
     x = layers.Activation(activation)(x)
 
     x = stack_fn(x, kernel, activation, se_ratio)
@@ -400,7 +400,7 @@ def MobileNetV3(stack_fn,
     x = layers.BatchNormalization(axis=channel_axis,
                                   epsilon=1e-3,
                                   momentum=0.999,
-                                  name='Conv_1/BatchNorm')(x)
+                                  name='Conv_1/BatchNorm')(x, training=False)
     x = layers.Activation(activation)(x)
 
     if include_top:
