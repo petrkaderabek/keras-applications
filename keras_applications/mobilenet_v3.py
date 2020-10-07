@@ -90,7 +90,9 @@ def hard_sigmoid(x):
 
 
 def hard_swish(x):
-    return layers.Multiply()([layers.Activation(hard_sigmoid)(x), x])
+    # bug pri serializaci Activation; Lambda dela to same a funguje:
+    #return layers.Multiply()([layers.Activation(hard_sigmoid)(x), x])
+    return layers.Multiply()([layers.Lambda(hard_sigmoid)(x), x])  
 
 
 # This function is taken from the original tf repo.
@@ -125,7 +127,9 @@ def _se_block(inputs, filters, se_ratio, prefix):
                       kernel_size=1,
                       padding='same',
                       name=prefix + 'squeeze_excite/Conv_1')(x)
-    x = layers.Activation(hard_sigmoid)(x)
+    # bug pri serializaci Activation; Lambda dela to same a funguje:
+    #x = layers.Activation(hard_sigmoid)(x)
+    x = layers.Lambda(hard_sigmoid)(x)
     if backend.backend() == 'theano':
         # For the Theano backend, we have to explicitly make
         # the excitation weights broadcastable.
@@ -155,7 +159,8 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride,
                                       epsilon=1e-3,
                                       momentum=0.999,
                                       name=prefix + 'expand/BatchNorm')(x, training=False)
-        x = layers.Activation(activation)(x)
+        #x = layers.Activation(activation)(x)
+        x = layers.Lambda(activation)(x)
 
     if stride == 2:
         x = layers.ZeroPadding2D(padding=correct_pad(backend, x, kernel_size),
@@ -169,7 +174,9 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride,
                                   epsilon=1e-3,
                                   momentum=0.999,
                                   name=prefix + 'depthwise/BatchNorm')(x, training=False)
-    x = layers.Activation(activation)(x)
+    # bug pri serializaci Activation; Lambda dela to same a funguje:
+    #x = layers.Activation(activation)(x)
+    x = layers.Lambda(activation)(x)
 
     if se_ratio:
         x = _se_block(x, _depth(infilters * expansion), se_ratio, prefix)
@@ -381,7 +388,9 @@ def MobileNetV3(stack_fn,
                                   epsilon=1e-3,
                                   momentum=0.999,
                                   name='Conv/BatchNorm')(x, training=False)
-    x = layers.Activation(activation)(x)
+    # bug pri serializaci Activation; Lambda dela to same a funguje:
+    #x = layers.Activation(activation)(x)
+    x = layers.Lambda(activation)(x)
 
     x = stack_fn(x, kernel, activation, se_ratio)
 
@@ -401,7 +410,9 @@ def MobileNetV3(stack_fn,
                                   epsilon=1e-3,
                                   momentum=0.999,
                                   name='Conv_1/BatchNorm')(x, training=False)
-    x = layers.Activation(activation)(x)
+    # bug pri serializaci Activation; Lambda dela to same a funguje:
+    #x = layers.Activation(activation)(x)
+    x = layers.Lambda(activation)(x)
 
     if include_top:
         x = layers.GlobalAveragePooling2D()(x)
@@ -413,7 +424,9 @@ def MobileNetV3(stack_fn,
                           kernel_size=1,
                           padding='same',
                           name='Conv_2')(x)
-        x = layers.Activation(activation)(x)
+        # bug pri serializaci Activation; Lambda dela to same a funguje:
+        #x = layers.Activation(activation)(x)
+        x = layers.Lambda(activation)(x)
         if dropout_rate > 0:
             x = layers.Dropout(dropout_rate)(x)
         x = layers.Conv2D(classes,
